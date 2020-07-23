@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
+    <title>Chaos Game by Osho</title>
+    <style>
+        body {
+            min-width: 820px;
+        }
+        #player {
+            margin: auto;
+            height: 20px;
+        }
+        #container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;  
+        }
+        #container * {
+            margin: 10px;
+        }
+        .footer-menu {
+            margin: auto;
+        }
+        
+    </style>
+</head>
+<body >
+    <h1 align = "center">Chaos Game By Osho</h1>
+    <section name="header">
+        <div class="ui Inverted menu">
+            <a class="item">
+            <img src="./Osho.JPG"/> Chaos Game
+            </a>
+            <a class="item" target="_blank" href="https://www.linkedin.com/in/osho-pandey-5299011ab">
+            <i class="linkedin icon"></i> Connect
+            </a>
+            <a class="item" target="_blank" href="https://instagram.com/rajneesh.osho">
+                <i class="instagram icon"></i> Follow
+                </a>
+            
+            <audio controls autoplay loop id="player">
+                <source src="./thunder.mp3">
+            </audio>
+        </div>
+    </section>
+
+    <section name="canvas">
+        <div class="ui placeholder segment">
+            <canvas id="mycanvas" width="700" height="500" style="display:block;margin:0 auto"></canvas>
+        </div>
+    </section>
+
+    <div id="container">
+        <div class="ui floating message">
+            Enter number of bigger vertices: 
+            <div class="ui input focus">
+                <input id="nthsidedpolygon" type="number" placeholder="must be greater than 2" style="width:200px"/>
+            </div>
+            <br/>
+            Enter %age of distance to travel: 
+            <div class="ui input focus">
+                <input id="distratio" type="number" placeholder="Try 60.8 i.e GoldenRatio Inverse" style="width:300px"/>
+            </div>
+            <br/>
+        </div>
+        <button class="ui primary button" onclick="playForSide()">
+            Surprise!!
+        </button>
+        
+        <div class="ui divider"></div>
+
+        <div class="ui styled accordion">
+            <div class="active title">
+                <i class="dropdown icon"></i>
+                How this works?
+            </div>
+            <div class="active content">
+                <ul class="list">
+                    <li>We start with a number of point greater then 2 . Default it is initialised to 3.</li>
+                    <li>In each step, we chose randomly one of the bigger vertex and move  what ever %age you specified towards it from our current position.</li>
+                    <li>We keep repeating the previous step till infinity.</li>
+                </ul>
+            </div>
+            <div class="title">
+                <i class="dropdown icon"></i>
+                Reason I made it?
+            </div>
+            <div class="content">
+                <ul class="list">
+                    <li>Programming is my hobby and also i wanted to create something from the things which i am learning.</li>
+                    <li>I recently learned about GoldenRatio, and was amazed to imagine the concept of it .</li>
+                    <li>I love Math + Fractals.Wanted to try something new rather then coding on coding platforms</li>
+                </ul>
+            </div>
+          
+    
+        </div>
+    </section>
+    <script>
+        // accordion needs initialization -.-
+        $(document).ready(function(){
+            $('.ui.accordion').accordion();
+        });
+
+        let canvas = document.querySelector('#mycanvas');
+        let canvasContext = canvas.getContext('2d');
+
+        let centerX = Math.random() * canvas.width;
+        let centerY = Math.random() * canvas.height;
+        let RAD = 1;
+        let POINTS = [];
+        let N = 3;
+        let PADDING = 50;
+        let distRatio = 0.5;
+        
+        function playForSide() {
+            N = document.querySelector('#nthsidedpolygon').value;
+            if (N < 3) {
+                alert('points must be greater than 2');
+                return;
+            }
+
+            distRatio = document.querySelector('#distratio').value/90;
+            if (distRatio > 0 && distRatio < 1) {
+                // all good here 
+            }
+            else {
+                alert('distance to travel must be less than 100%, try 60.8 the golden ratio');
+                document.querySelector('#distratio').value = 60.8;
+                distRatio = 60.8;
+            }
+            
+            init();
+        }
+
+        function colorRect(topLeftX,topLeftY, boxWidth,boxHeight, fillColor) {
+            canvasContext.beginPath();
+
+            canvasContext.fillStyle = fillColor;
+            canvasContext.fillRect(topLeftX,topLeftY, boxWidth,boxHeight);
+
+            canvasContext.closePath();
+        }
+        
+        function colorCircle(centerX,centerY, radius, fillColor) {
+            canvasContext.beginPath();
+
+            canvasContext.fillStyle = fillColor;
+            canvasContext.arc(centerX,centerY, radius, 0,Math.PI*2, true);
+            canvasContext.fill();
+
+            canvasContext.closePath();
+        }
+
+        function draw() {
+            let W = canvas.width;
+            let H = canvas.height;
+            let h = H - PADDING;
+            let origin = [W/2, h/2+PADDING/2];
+            let rad = h/2;
+            let theta = (Math.PI*2)/N; 
+            let target = Math.floor(Math.random() * N);
+
+            for (let i=0; i<N; i++) {
+                let currentTheta = i*theta - (Math.PI/2); //rotating by 90 degs for better aesthetics
+                POINTS[i] = [origin[0] + rad*Math.cos(currentTheta), origin[1]+rad*Math.sin(currentTheta)];
+                colorCircle(POINTS[i][0],POINTS[i][1], RAD*10, i == target?'white':'red');
+            }
+            
+            colorCircle(centerX, centerY, RAD, 'yellow');
+
+            
+            centerX = (distRatio * POINTS[target][0]) + (1-distRatio) * centerX;
+            centerY = (distRatio * POINTS[target][1]) + (1-distRatio) * centerY;
+
+            const myTimer = setTimeout(draw, 1000/250);
+        }
+        
+        function init() {
+            colorRect(0,0, canvas.width,canvas.height, 'black'); 
+            draw();
+        }
+
+        window.onload = function() {
+            init();
+        }
+
+    </script>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'UA-142508299-2');
+    </script>
+</body>
+</html>
